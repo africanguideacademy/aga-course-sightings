@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AGA Sightings</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5C3D1E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AGA Sightings">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B1D14; --earth:#5C3D1E; --burgundy:#7A2230; --gold:#C9A96E;
+    --parchment:#F4E9D8; --paper:#FFFDF8; --sage:#5E7148; --line:#E3D2B8; --muted:#8A7560;
+    --serif:'Fraunces',Georgia,serif; --sans:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--parchment);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--burgundy);outline-offset:2px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px}
+
+  /* Header */
+  header{background:var(--earth);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 0 0}
+  .brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand h1{font-family:var(--serif);font-weight:700;font-size:1.35rem;margin:0;letter-spacing:.2px}
+  .brand h1 small{display:block;font-family:var(--sans);font-weight:400;font-size:.8rem;opacity:.75}
+  .course-pick select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 10px;max-width:180px}
+  .course-pick option{color:var(--ink)}
+  .tabs{display:flex;gap:4px;margin-top:14px}
+  .tab{flex:1;background:none;border:none;color:rgba(255,255,255,.7);padding:11px 0 12px;font-weight:600;border-bottom:3px solid transparent}
+  .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold)}
+  .status{font-size:.8rem;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);white-space:nowrap}
+  .status.warn{background:var(--gold);color:var(--ink)}
+  .status{border:none;color:#fff}
+  .status.warn{color:var(--ink)}
+
+  section.view{display:none;padding:16px 0 120px}
+  section.view.on{display:block}
+
+  /* Log: context */
+  .ctx{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ctx label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+  .ctx .full{grid-column:1/-1}
+  .ctx select,.ctx input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{flex:1;border:none;background:none;padding:10px 4px;font-size:.92rem}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed="true"]{background:var(--earth);color:#fff}
+
+  .cats{display:flex;gap:8px;overflow-x:auto;padding:16px 0 10px;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 14px;font-weight:500;font-size:.92rem}
+  .chip[aria-pressed="true"]{background:var(--burgundy);border-color:var(--burgundy);color:#fff}
+  .chip .n{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--gold);color:var(--ink);font-size:.78rem}
+
+  .search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:1rem}
+  .splist{list-style:none;margin:10px 0 0;padding:0;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .sp{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+  .sp:last-child{border-bottom:none}
+  .sp .tick{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;color:#fff;font-size:.85rem}
+  .sp.sel{background:#F7EEE0}
+  .sp.sel .tick{background:var(--burgundy);border-color:var(--burgundy)}
+  .sp .nm{flex:1;min-width:0}
+  .sp .nm .cat{display:block;font-size:.76rem;color:var(--muted)}
+  .pts{flex:none;font-size:.75rem;font-weight:600;color:var(--earth);background:#EFE1C9;border-radius:6px;padding:2px 7px}
+  .have{flex:none;font-size:.75rem;color:var(--sage)}
+  .step{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .step button{border:none;background:none;width:34px;height:32px;font-size:1.1rem}
+  .step span{min-width:24px;text-align:center;font-weight:600}
+  .addnew{display:block;width:100%;margin-top:10px;background:none;border:1px dashed var(--gold);border-radius:10px;padding:12px;color:var(--earth)}
+
+  .savebar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(43,29,20,.08);transform:translateY(110%);transition:transform .2s}
+  .savebar.on{transform:none}
+  .savebar .wrap{display:flex;align-items:center;gap:12px}
+  .savebar .sum{flex:1;font-size:.95rem}
+  .btn{border:none;border-radius:10px;padding:13px 20px;font-weight:600;background:var(--burgundy);color:#fff}
+  .btn.ghost{background:none;color:var(--earth);padding:13px 8px}
+
+  /* Results */
+  .rbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .rbar select{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .rbar .seg{flex:1;min-width:230px}
+  .hero{margin:18px 0 8px}
+  .hero .big{font-family:var(--serif);font-weight:700;font-size:3.6rem;line-height:1;color:var(--burgundy)}
+  .hero p{margin:6px 0 0;color:var(--earth)}
+  .tally{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:14px}
+  .tally div{background:var(--paper);padding:10px 12px}
+  .tally b{display:block;font-family:var(--serif);font-size:1.4rem}
+  .tally span{font-size:.8rem;color:var(--muted)}
+
+  h2{font-family:var(--serif);font-weight:500;font-size:1.25rem;margin:30px 0 4px}
+  .sub{margin:0 0 12px;color:var(--muted);font-size:.88rem}
+
+  .board{list-style:none;margin:0;padding:0}
+  .row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .row .rk{font-family:var(--serif);font-size:1.15rem;color:var(--muted);text-align:center}
+  .row .gn{font-weight:600}
+  .row .gn em{font-style:normal;font-weight:500;font-size:.75rem;color:#fff;background:var(--burgundy);border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:2px}
+  .row .meta{font-size:.8rem;color:var(--muted)}
+  .row .sc{font-family:var(--serif);font-weight:700;font-size:1.6rem}
+  .track{grid-column:2/-1;height:10px;background:#EADBC3;border-radius:999px;overflow:hidden}
+  .track i{display:block;height:100%;border-radius:999px;transition:width .5s}
+
+  .tbl-wrap{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  th,td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-weight:600;color:var(--earth);background:#F7EEE0}
+  tr:last-child td{border-bottom:none}
+  td.lead{font-weight:700;color:var(--burgundy)}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+
+  .excl{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .excl div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .excl h3{margin:0 0 6px;font-size:.95rem}
+  .excl ul{margin:0;padding-left:18px;font-size:.9rem}
+
+  .check h3{font-size:.95rem;margin:18px 0 6px;color:var(--earth)}
+  .check ul{list-style:none;margin:0;padding:0;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+  .check li{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:.92rem}
+  .check li:last-child{border-bottom:none}
+  .check li .nm{flex:1}
+  .check li .fs{font-size:.78rem;color:var(--muted)}
+  .check .dots{display:flex;gap:3px}
+  .check .dots .dot{margin:0}
+
+  .recent{list-style:none;margin:0;padding:0}
+  .recent li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+  .recent .nm{flex:1}
+  .recent .nm small{display:block;color:var(--muted);font-size:.78rem}
+  .recent .wait{font-size:.75rem;color:var(--ink);background:var(--gold);border-radius:6px;padding:2px 7px}
+  .del{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:.8rem;color:var(--burgundy)}
+  .del.arm{background:var(--burgundy);color:#fff;border-color:var(--burgundy)}
+
+  .empty{padding:28px 16px;text-align:center;color:var(--muted);background:var(--paper);border:1px dashed var(--line);border-radius:12px}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center;z-index:10}
+  .toast.on{opacity:1}
+  .loading{padding:40px 0;text-align:center;color:var(--muted)}
+
+  @media (min-width:700px){ .ctx{grid-template-columns:repeat(4,1fr)} .ctx .half{grid-column:span 2} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <h1>AGA Sightings<small>Game drive and walk log</small></h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="status" class="status" onclick="syncNow()">Checking…</button>
+        <div class="course-pick"><select id="course" aria-label="Course"></select></div>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-log" aria-selected="true" onclick="showView('log')">Log sightings</button>
+      <button class="tab" role="tab" id="tab-res" aria-selected="false" onclick="showView('res')">Results</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- LOG -->
+  <section class="view on" id="view-log">
+    <div id="log-loading" class="loading">Loading species list…</div>
+    <div id="log-body" hidden>
+      <div class="ctx">
+        <div class="half"><label for="group">Group</label><select id="group"></select></div>
+        <div class="half"><label for="date">Date</label><input type="date" id="date"></div>
+        <div class="half"><label>Activity</label>
+          <div class="seg" id="activity"><button aria-pressed="true">Drive</button><button aria-pressed="false">Walk</button></div></div>
+        <div class="half"><label>Session</label>
+          <div class="seg" id="session"><button aria-pressed="true">Morning</button><button aria-pressed="false">Afternoon</button><button aria-pressed="false">Night</button></div></div>
+        <div class="full"><label for="notes">Notes (optional, saved with each sighting)</label><input id="notes" placeholder="e.g. Xakanaxa lagoon, kill site"></div>
+      </div>
+
+      <div class="cats" id="cats"></div>
+      <input class="search" id="q" type="search" placeholder="Search all species" autocomplete="off">
+      <ul class="splist" id="splist"></ul>
+      <button class="addnew" id="addnew">Add a species that's not listed</button>
+      <div class="ctx" id="addform" hidden style="margin-top:10px">
+        <div class="half"><label for="newname">Species name</label><input id="newname" placeholder="e.g. Bushveld Gerbil"></div>
+        <div class="half"><label for="newcat">Category</label><select id="newcat"></select></div>
+        <div class="full" style="display:flex;gap:10px;justify-content:flex-end"><button class="btn ghost" id="addcancel">Cancel</button><button class="btn" id="addok">Add and select</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="view" id="view-res">
+    <div class="rbar">
+      <select id="period" aria-label="Period"></select>
+      <div class="seg" id="score">
+        <button aria-pressed="true" data-m="species">Species</button>
+        <button aria-pressed="false" data-m="points">Points</button>
+        <button aria-pressed="false" data-m="sightings">Sightings</button>
+      </div>
+    </div>
+    <div id="res-body"><div class="loading">Loading results…</div></div>
+  </section>
+</main>
+
+<div class="savebar" id="savebar">
+  <div class="wrap">
+    <div class="sum" id="sum"></div>
+    <button class="btn ghost" onclick="clearSel()">Clear</button>
+    <button class="btn" id="saveBtn" onclick="saveSel()">Save sightings</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const COLORS = ['#7A2230','#5E7148','#B07A2A','#3F6B7A','#A0522D','#6B4C7A','#2F5D50','#8A6D3B'];
+const QKEY = 'aga_sight_queue', PKEY = 'aga_sight_prefs', CKEY = 'aga_sight_cfg', RKEY = 'aga_sight_res_', SKEY = 'aga_sight_synced';
+
+let cfg = null, results = null, cat = 'Mammals', query = '', scoreMode = 'species', period = 'all';
+const sel = new Map();
+let queue = load(QKEY, []), prefs = load(PKEY, {}), sending = false, armed = null;
+
+// ── helpers ──
+function load(k, d){ try{ return JSON.parse(localStorage.getItem(k)) || d; }catch(e){ return d; } }
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function key(c, s){ return (String(c).trim() + '|' + String(s).trim()).toLowerCase(); }
+function today(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function niceDate(s){ const p = s.split('-'); const d = new Date(p[0], p[1]-1, p[2]); return d.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
+function segVal(id){ const b = $(id).querySelector('[aria-pressed="true"]'); return b ? b.textContent : ''; }
+function wireSeg(id, fn){ $(id).querySelectorAll('button').forEach(b => b.onclick = () => {
+  $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); if (fn) fn(b); }); }
+function courseObj(){ return cfg.courses.find(c => c.code === $('course').value) || {code:'', groups:[]}; }
+function groupsForCourse(rows){
+  const gs = courseObj().groups.slice();
+  rows.forEach(r => { if (r.group && !gs.includes(r.group)) gs.push(r.group); });
+  return gs;
+}
+function colorOf(g, gs){ const i = gs.indexOf(g); return COLORS[(i < 0 ? 0 : i) % COLORS.length]; }
+
+// ── talking to the Google Sheet ──
+function api(action, data){
+  const cfgOk = window.AGA_CONFIG && AGA_CONFIG.API_URL && AGA_CONFIG.API_URL.indexOf('/exec') > 0;
+  if (!cfgOk) return Promise.reject(new Error('API_URL is not set in config.js'));
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 45000);
+  return fetch(AGA_CONFIG.API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action: action, key: AGA_CONFIG.APP_KEY }, data || {})), signal: ctl.signal })
+    .then(r => r.json())
+    .then(j => { clearTimeout(t); if (j.error) throw new Error(j.error); return j; })
+    .catch(e => { clearTimeout(t); throw e; });
+}
+
+// ── start: use what's saved on the phone straight away, then refresh if there's signal ──
+(function start(){
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  const cached = load(CKEY, null);
+  if (cached) applyConfig(cached);
+  api('config').then(c => { store(CKEY, c); applyConfig(c); })
+    .catch(err => {
+      if (!cfg) $('log-loading').textContent = /API_URL|app key/i.test(err.message)
+        ? 'Setup problem: ' + err.message
+        : 'First time on this phone: connect to camp Wi-Fi once so the app can download the species list.';
+    });
+  setInterval(() => { flush(); }, 30000);
+  window.addEventListener('online', syncNow);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) flush(); });
+})();
+
+function applyConfig(c){
+  const first = !cfg;
+  cfg = c;
+  // keep species typed in on this phone that haven't reached the sheet yet
+  queue.forEach(q => { if (!cfg.species.some(s => key(s.category, s.name) === key(q.category, q.species))) cfg.species.push({ category: q.category, name: q.species, points: 1 }); });
+  if (!cfg.courses.length){ $('log-loading').hidden = false; $('log-body').hidden = true; $('log-loading').textContent = 'No active courses. Add one in the Courses sheet.'; return; }
+  const keep = $('course').value || prefs.course;
+  $('course').innerHTML = cfg.courses.map(x => '<option>' + esc(x.code) + '</option>').join('');
+  if (keep && cfg.courses.some(x => x.code === keep)) $('course').value = keep;
+  $('newcat').innerHTML = cfg.categories.map(c => '<option>' + esc(c) + '</option>').join('');
+  fillGroups();
+  if (first){
+    $('course').onchange = () => { prefs.course = $('course').value; store(PKEY, prefs); fillGroups(); sel.clear(); results = null; renderLog(); loadResults(); };
+    $('date').value = today();
+    wireSeg('activity'); wireSeg('session');
+    wireSeg('score', b => { scoreMode = b.dataset.m; renderResults(); });
+    $('period').onchange = () => { period = $('period').value; renderResults(); };
+    $('q').oninput = () => { query = $('q').value.trim().toLowerCase(); renderList(); };
+    $('addnew').onclick = () => { $('addform').hidden = false; $('newname').value = $('q').value.trim(); $('newcat').value = cat; $('newname').focus(); };
+    $('addcancel').onclick = () => { $('addform').hidden = true; };
+    $('addok').onclick = addCustom;
+    const h = new Date().getHours();
+    const s = h >= 19 || h < 4 ? 'Night' : h >= 12 ? 'Afternoon' : 'Morning';
+    $('session').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.textContent === s));
+    $('log-loading').hidden = true; $('log-body').hidden = false;
+    flush();
+  }
+  renderLog(); loadResults(); updateStatus();
+}
+
+function syncNow(){ flush(); loadResults(); }
+
+function fillGroups(){
+  const gs = courseObj().groups;
+  $('group').innerHTML = gs.length ? gs.map(g => '<option>' + esc(g) + '</option>').join('') : '<option value="">Add groups in the Courses sheet</option>';
+  if (prefs.group && gs.includes(prefs.group)) $('group').value = prefs.group;
+  $('group').onchange = () => { prefs.group = $('group').value; store(PKEY, prefs); renderList(); };
+}
+
+// ── LOG ──
+function showView(v){
+  $('view-log').classList.toggle('on', v === 'log'); $('view-res').classList.toggle('on', v === 'res');
+  $('tab-log').setAttribute('aria-selected', v === 'log'); $('tab-res').setAttribute('aria-selected', v === 'res');
+  updateBar();
+  if (v === 'res') renderResults();
+}
+
+function renderLog(){ renderCats(); renderList(); updateBar(); }
+
+function renderCats(){
+  $('cats').innerHTML = cfg.categories.map(c => {
+    let n = 0; sel.forEach(v => { if (v.category === c) n++; });
+    return '<button class="chip" aria-pressed="' + (c === cat && !query) + '" data-c="' + esc(c) + '">' + esc(c) + (n ? '<span class="n">' + n + '</span>' : '') + '</button>';
+  }).join('');
+  $('cats').querySelectorAll('.chip').forEach(b => b.onclick = () => { cat = b.dataset.c; query = ''; $('q').value = ''; renderCats(); renderList(); });
+}
+
+function groupHas(){
+  const g = $('group').value, set = new Set();
+  allRows().forEach(r => { if (r.group === g) set.add(key(r.category, r.species)); });
+  return set;
+}
+
+function renderList(){
+  const have = groupHas();
+  let list = query ? cfg.species.filter(s => s.name.toLowerCase().includes(query)) : cfg.species.filter(s => s.category === cat);
+  list = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+  if (!list.length){
+    $('splist').innerHTML = '<li class="empty">' + (query ? 'No species match "' + esc($('q').value) + '". Use the button below to add it.' : 'No species in this category yet.') + '</li>';
+    return;
+  }
+  $('splist').innerHTML = list.map(s => {
+    const k = key(s.category, s.name), on = sel.get(k);
+    return '<li class="sp' + (on ? ' sel' : '') + '" data-k="' + esc(k) + '" role="checkbox" aria-checked="' + !!on + '" tabindex="0">' +
+      '<span class="tick">' + (on ? '✓' : '') + '</span>' +
+      '<span class="nm">' + esc(s.name) + (query ? '<span class="cat">' + esc(s.category) + '</span>' : '') + '</span>' +
+      (have.has(k) ? '<span class="have">On your list</span>' : '') +
+      (s.points > 1 ? '<span class="pts">' + s.points + ' pts</span>' : '') +
+      (on ? '<span class="step"><button data-d="-1" aria-label="Fewer">−</button><span>' + on.count + '</span><button data-d="1" aria-label="More">+</button></span>' : '') +
+      '</li>';
+  }).join('');
+  $('splist').querySelectorAll('.sp').forEach(li => {
+    const k = li.dataset.k;
+    const toggle = () => {
+      if (sel.has(k)) sel.delete(k);
+      else { const s = cfg.species.find(x => key(x.category, x.name) === k); sel.set(k, {category:s.category, species:s.name, count:1}); }
+      renderCats(); renderList(); updateBar();
+    };
+    li.onclick = toggle;
+    li.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggle(); } };
+    li.querySelectorAll('.step button').forEach(b => b.onclick = e => {
+      e.stopPropagation(); const v = sel.get(k); v.count = Math.max(1, v.count + Number(b.dataset.d)); renderList(); });
+  });
+}
+
+function addCustom(){
+  const name = $('newname').value.trim(), c = $('newcat').value;
+  if (!name){ $('newname').focus(); return; }
+  const k = key(c, name);
+  if (!cfg.species.some(s => key(s.category, s.name) === k)) cfg.species.push({category:c, name:name, points:1});
+  sel.set(k, {category:c, species:name, count:1});
+  cat = c; query = ''; $('q').value = ''; $('addform').hidden = true; renderLog();
+  toast(name + ' added to ' + c);
+}
+
+function updateBar(){
+  const n = sel.size, onLog = $('view-log').classList.contains('on');
+  $('savebar').classList.toggle('on', n > 0 && onLog);
+  $('sum').textContent = n + ' species selected';
+}
+function clearSel(){ sel.clear(); renderLog(); }
+
+function saveSel(){
+  const course = $('course').value, group = $('group').value;
+  if (!group){ toast('Choose your group first'); return; }
+  const base = { date: $('date').value || today(), course, group, activity: segVal('activity'), session: segVal('session'), notes: $('notes').value.trim() };
+  sel.forEach(v => queue.push(Object.assign({ id: uid(), category: v.category, species: v.species, count: v.count }, base)));
+  store(QKEY, queue);
+  const n = sel.size; sel.clear(); $('notes').value = '';
+  renderLog(); updateStatus(); renderResults();
+  toast(n + (n === 1 ? ' sighting' : ' sightings') + ' saved for ' + group);
+  flush();
+}
+
+// ── SYNC (works with weak signal: saves on the phone first, sends when it can) ──
+function flush(){
+  if (sending || !queue.length){ updateStatus(); return; }
+  sending = true; updateStatus();
+  const batch = queue.slice(0, 150);
+  api('save', { items: batch }).then(res => {
+    sending = false;
+    const done = new Set(res.ids);
+    queue = queue.filter(q => !done.has(q.id)); store(QKEY, queue);
+    store(SKEY, Date.now());
+    updateStatus(); loadResults();
+    if (queue.length) flush();
+  }).catch(() => { sending = false; updateStatus(); });
+}
+function lastSync(){ const t = load(SKEY, 0); return t ? new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never'; }
+function updateStatus(){
+  const s = $('status');
+  if (sending){ s.className = 'status warn'; s.textContent = 'Sending ' + queue.length + '…'; return; }
+  if (queue.length){ s.className = 'status warn'; s.textContent = queue.length + ' on phone, not sent yet'; return; }
+  s.className = 'status'; s.textContent = navigator.onLine ? 'All sent' : 'Offline';
+}
+
+// ── RESULTS ──
+function loadResults(){
+  const code = $('course').value;
+  if (!code) return;
+  const cached = load(RKEY + code, null);
+  if (cached && (!results || results.course !== code)){ results = cached; fillPeriods(); renderResults(); renderList(); }
+  if (!results) results = { course: code, rows: [], points: {}, local: true };
+  api('results', { course: code }).then(r => {
+    r.fetchedAt = Date.now(); store(RKEY + code, r); store(SKEY, Date.now());
+    if (r.course !== $('course').value) return;
+    results = r; fillPeriods(); renderResults(); renderList(); updateStatus();
+  }).catch(() => { renderResults(); });
+}
+
+function allRows(){
+  const code = $('course').value;
+  const saved = results && results.course === code ? results.rows : [];
+  const pend = queue.filter(q => q.course === code).map(q => Object.assign({ pending: true, loggedAt: Infinity }, q));
+  return saved.concat(pend);
+}
+function pts(r){ return (results && results.points[key(r.category, r.species)]) || (cfg.species.find(s => key(s.category, s.name) === key(r.category, r.species)) || {}).points || 1; }
+
+function fillPeriods(){
+  const dates = [...new Set(allRows().map(r => r.date))].sort().reverse();
+  if (period !== 'all' && !dates.includes(period)) period = 'all';
+  $('period').innerHTML = '<option value="all">Whole course</option>' + dates.map(d => '<option value="' + d + '">' + (d === today() ? 'Today' : niceDate(d)) + '</option>').join('');
+  $('period').value = period;
+}
+
+function renderResults(){
+  if (!results) return;
+  fillPeriods();
+  const all = allRows();
+  const rows = period === 'all' ? all : all.filter(r => r.date === period);
+  const gs = groupsForCourse(all);
+  const body = $('res-body');
+  if (!rows.length){ body.innerHTML = '<div class="empty" style="margin-top:18px">No sightings logged ' + (period === 'all' ? 'for this course yet' : 'on this day') + '. Open Log sightings to add the first ones.</div>'; return; }
+
+  // per group
+  const G = {}; gs.forEach(g => G[g] = { keys: new Set(), sightings: 0, cats: {} });
+  const seenBy = {}, total = new Set(), catTotal = {};
+  rows.forEach(r => {
+    const k = key(r.category, r.species), g = G[r.group] || (G[r.group] = { keys: new Set(), sightings: 0, cats: {} });
+    g.keys.add(k); g.sightings++;
+    (g.cats[r.category] = g.cats[r.category] || new Set()).add(k);
+    (seenBy[k] = seenBy[k] || new Set()).add(r.group);
+    total.add(k); (catTotal[r.category] = catTotal[r.category] || new Set()).add(k);
+  });
+  const ptOf = {}; rows.forEach(r => ptOf[key(r.category, r.species)] = pts(r));
+  const score = g => scoreMode === 'species' ? G[g].keys.size : scoreMode === 'sightings' ? G[g].sightings : [...G[g].keys].reduce((a, k) => a + ptOf[k], 0);
+  const ranked = gs.slice().sort((a, b) => score(b) - score(a));
+  const max = Math.max(1, ...ranked.map(score));
+  const top = score(ranked[0]);
+  const periodLabel = period === 'all' ? 'on ' + esc($('course').value) : (period === today() ? 'today' : 'on ' + niceDate(period));
+
+  const asOf = results.fetchedAt ? new Date(results.fetchedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null;
+  let h = '<p class="sub" style="margin:14px 0 0">' + (asOf ? 'Other groups\' sightings as of ' + asOf + '. Yours update instantly.' : 'Connect to camp Wi-Fi to see other groups\' sightings.') + '</p>';
+  h += '<div class="hero"><div class="big">' + total.size + '</div><p>species recorded ' + periodLabel + ' across ' + rows.length + ' sightings</p>' +
+    '<div class="tally">' + cfg.categories.map(c => '<div><b>' + (catTotal[c] ? catTotal[c].size : 0) + '</b><span>' + esc(c) + '</span></div>').join('') + '</div></div>';
+
+  // leaderboard
+  const modeTxt = { species: 'Ranked by number of different species seen', points: 'Ranked by points. Rarer animals score more (set in the Species sheet)', sightings: 'Ranked by number of sightings logged' }[scoreMode];
+  h += '<h2>Leaderboard</h2><p class="sub">' + modeTxt + '</p><ol class="board">';
+  let rank = 0, prev = null;
+  ranked.forEach((g, i) => {
+    const s = score(g); if (s !== prev){ rank = i + 1; prev = s; }
+    const P = [...G[g].keys].reduce((a, k) => a + ptOf[k], 0);
+    h += '<li class="row"><span class="rk">' + rank + '</span><div><div class="gn">' + esc(g) + (s === top && s > 0 ? '<em>Leading</em>' : '') + '</div>' +
+      '<div class="meta">' + G[g].keys.size + ' species, ' + P + (P === 1 ? ' point, ' : ' points, ') + G[g].sightings + (G[g].sightings === 1 ? ' sighting' : ' sightings') + '</div></div>' +
+      '<span class="sc">' + s + '</span><div class="track"><i style="width:' + (s / max * 100) + '%;background:' + colorOf(g, gs) + '"></i></div></li>';
+  });
+  h += '</ol>';
+
+  // category table
+  h += '<h2>By category</h2><p class="sub">Different species per group. The category leader is highlighted.</p><div class="tbl-wrap"><table><thead><tr><th>Category</th>' +
+    gs.map(g => '<th><span class="dot" style="background:' + colorOf(g, gs) + '"></span>' + esc(g) + '</th>').join('') + '</tr></thead><tbody>';
+  cfg.categories.forEach(c => {
+    const vals = gs.map(g => G[g].cats[c] ? G[g].cats[c].size : 0), m = Math.max(...vals);
+    h += '<tr><td>' + esc(c) + '</td>' + vals.map(v => '<td class="' + (v === m && v > 0 ? 'lead' : '') + '">' + v + '</td>').join('') + '</tr>';
+  });
+  h += '</tbody></table></div>';
+
+  // exclusives
+  const ex = {}; Object.keys(seenBy).forEach(k => { if (seenBy[k].size === 1){ const g = [...seenBy[k]][0]; (ex[g] = ex[g] || []).push(k); } });
+  if (gs.length > 1 && Object.keys(ex).length){
+    const nameOf = {}; rows.forEach(r => nameOf[key(r.category, r.species)] = r.species);
+    h += '<h2>Only one group saw these</h2><p class="sub">Bragging rights</p><div class="excl">' +
+      gs.filter(g => ex[g]).map(g => '<div><h3><span class="dot" style="background:' + colorOf(g, gs) + '"></span>' + esc(g) + ' (' + ex[g].length + ')</h3><ul>' +
+        ex[g].map(k => nameOf[k]).sort().map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>').join('') + '</div>';
+  }
+
+  // day by day (whole course only)
+  if (period === 'all'){
+    const byDay = {}, first = {};
+    all.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(r => {
+      const k = key(r.category, r.species);
+      (byDay[r.date] = byDay[r.date] || { sp: new Set(), fresh: new Set(), n: 0 });
+      byDay[r.date].sp.add(k); byDay[r.date].n++;
+      if (!first[k]){ first[k] = r.date; byDay[r.date].fresh.add(k); }
+    });
+    const days = Object.keys(byDay).sort();
+    let run = 0;
+    h += '<h2>Day by day</h2><p class="sub">How the course list grew</p><div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Species seen</th><th>New to the list</th><th>Course total</th></tr></thead><tbody>' +
+      days.map(d => { run += byDay[d].fresh.size; return '<tr><td>' + niceDate(d) + '</td><td>' + byDay[d].sp.size + '</td><td>' + byDay[d].fresh.size + '</td><td>' + run + '</td></tr>'; }).join('') +
+      '</tbody></table></div>';
+  }
+
+  // checklist
+  const info = {};
+  rows.slice().sort((a, b) => a.date.localeCompare(b.date) || a.loggedAt - b.loggedAt).forEach(r => {
+    const k = key(r.category, r.species);
+    if (!info[k]) info[k] = { name: r.species, cat: r.category, first: r.date, by: r.group, groups: new Set() };
+    info[k].groups.add(r.group);
+  });
+  h += '<h2>Species list</h2><p class="sub">Everything seen, with the group that saw it first</p><div class="check">';
+  cfg.categories.concat(Object.values(info).map(i => i.cat).filter(c => !cfg.categories.includes(c))).filter((c, i, a) => a.indexOf(c) === i).forEach(c => {
+    const items = Object.values(info).filter(i => i.cat === c).sort((a, b) => a.name.localeCompare(b.name));
+    if (!items.length) return;
+    h += '<h3>' + esc(c) + ' (' + items.length + ')</h3><ul>' + items.map(i =>
+      '<li><span class="nm">' + esc(i.name) + '<br><span class="fs">First: ' + esc(i.by) + ', ' + niceDate(i.first) + '</span></span><span class="dots">' +
+      gs.filter(g => i.groups.has(g)).map(g => '<span class="dot" title="' + esc(g) + '" style="background:' + colorOf(g, gs) + '"></span>').join('') + '</span></li>').join('') + '</ul>';
+  });
+  h += '</div>';
+
+  // recent
+  const rec = rows.slice().sort((a, b) => b.loggedAt - a.loggedAt).slice(0, 20);
+  h += '<h2>Latest entries</h2><p class="sub">Logged something by mistake? Tap Remove twice.</p><ul class="recent">' + rec.map(r =>
+    '<li><span class="dot" style="background:' + colorOf(r.group, gs) + '"></span><span class="nm">' + esc(r.species) + (r.count > 1 ? ' ×' + r.count : '') +
+    '<small>' + esc(r.group) + ', ' + niceDate(r.date) + ', ' + esc(r.activity) + ' ' + esc(r.session).toLowerCase() + (r.notes ? ', ' + esc(r.notes) : '') + '</small></span>' +
+    (r.pending ? '<span class="wait">Waiting</span>' : '') + '<button class="del" data-id="' + esc(r.id) + '">Remove</button></li>').join('') + '</ul>';
+
+  body.innerHTML = h;
+  body.querySelectorAll('.del').forEach(b => b.onclick = () => removeEntry(b));
+}
+
+function removeEntry(b){
+  const id = b.dataset.id;
+  if (armed !== id){ armed = id; body().querySelectorAll('.del').forEach(x => { x.classList.remove('arm'); x.textContent = 'Remove'; });
+    b.classList.add('arm'); b.textContent = 'Tap again'; setTimeout(() => { if (armed === id){ armed = null; b.classList.remove('arm'); b.textContent = 'Remove'; } }, 3000); return; }
+  armed = null;
+  const qi = queue.findIndex(q => q.id === id);
+  if (qi >= 0){ queue.splice(qi, 1); store(QKEY, queue); updateStatus(); renderResults(); renderList(); toast('Removed'); return; }
+  b.disabled = true; b.textContent = 'Removing…';
+  api('delete', { id: id }).then(() => {
+    results.rows = results.rows.filter(r => r.id !== id); store(RKEY + results.course, results);
+    renderResults(); renderList(); toast('Removed');
+  }).catch(() => { b.disabled = false; b.textContent = 'Remove'; toast('Removing needs a connection. Try again at camp.'); });
+}
+function body(){ return $('res-body'); }
+</script>
+</body>
+</html>
