@@ -149,6 +149,7 @@ function saveSightings(items) {
       ]);
       sh.getRange(sh.getLastRow() + 1, 1, rows.length, SIGHT_HEADERS.length).setValues(rows);
       addNewSpecies_(ss, fresh);
+      addNewGroups_(ss, fresh);
     }
     return { saved: fresh.length, ids: items.map(it => String(it.id)) };
   } finally {
@@ -167,6 +168,26 @@ function addNewSpecies_(ss, items) {
     if (it.species && !known.has(k)) { known.add(k); add.push([it.category, String(it.species).trim(), 1]); }
   });
   if (add.length) sp.getRange(sp.getLastRow() + 1, 1, add.length, 3).setValues(add);
+}
+
+// Groups typed in on a phone get added to that course's row in the Courses sheet
+function addNewGroups_(ss, items) {
+  const sh = ss.getSheetByName(SH_COURSES);
+  const data = sh.getDataRange().getValues();
+  items.forEach(it => {
+    const g = String(it.group || '').trim();
+    if (!g) return;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() !== String(it.course).trim()) continue;
+      const list = String(data[i][3]).split(',').map(x => x.trim()).filter(Boolean);
+      if (!list.some(x => x.toLowerCase() === g.toLowerCase())) {
+        list.push(g);
+        data[i][3] = list.join(', ');
+        sh.getRange(i + 1, 4).setValue(data[i][3]);
+      }
+      break;
+    }
+  });
 }
 
 function parseDate_(s) {

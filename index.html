@@ -78,6 +78,7 @@
   .sp .nm{flex:1;min-width:0}
   .sp .nm .cat{display:block;font-size:.76rem;color:var(--muted)}
   .pts{flex:none;font-size:.75rem;font-weight:600;color:var(--earth);background:#EFE1C9;border-radius:6px;padding:2px 7px}
+  .pts.one{background:#F3EBDF;color:var(--muted);font-weight:500}
   .have{flex:none;font-size:.75rem;color:var(--sage)}
   .step{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff}
   .step button{border:none;background:none;width:34px;height:32px;font-size:1.1rem}
@@ -158,6 +159,62 @@
   .me-name{font-family:var(--serif);font-size:1.3rem;margin:18px 0 0}
   .times{font-size:.78rem;color:var(--muted);white-space:nowrap}
   .more{display:block;margin:10px auto 0;background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;color:var(--earth)}
+  .printbtn{padding:9px 14px;font-size:.92rem}
+
+  /* ── Printed report (A4) ── */
+  #print-sheet{display:none;color:#2B1D14;font-family:var(--sans);font-size:9.5pt;line-height:1.35}
+  .ps-page{width:186mm}
+  .ps-page + .ps-page{break-before:page;page-break-before:always}
+  .ps-head{display:flex;align-items:center;justify-content:space-between;gap:10mm;padding-bottom:4mm;border-bottom:1.2mm solid var(--gold);margin-bottom:5mm}
+  .ps-head img{height:17mm;width:auto}
+  .ps-title{text-align:right}
+  .ps-title h1{font-family:var(--serif);font-size:20pt;margin:0;color:var(--burgundy);line-height:1.1}
+  .ps-title p{margin:1mm 0 0;font-size:10pt;color:#5a4636}
+  .ps-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:3mm}
+  .ps-kpi{background:var(--burgundy);color:#fff;border-radius:2.5mm;padding:3mm 4mm}
+  .ps-kpi b{display:block;font-family:var(--serif);font-size:22pt;line-height:1}
+  .ps-kpi span{font-size:8.5pt;opacity:.9}
+  .ps-cats{display:grid;grid-template-columns:repeat(6,1fr);gap:2mm;margin-bottom:5mm}
+  .ps-cats div{border:0.3mm solid #E3D2B8;border-radius:2mm;padding:2mm 3mm;background:#FBF6EF}
+  .ps-cats b{display:block;font-family:var(--serif);font-size:14pt;color:var(--gold)}
+  .ps-cats span{font-size:7.5pt;color:#6b5746}
+  .ps-cols{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-bottom:5mm}
+  .ps-sec{break-inside:avoid}
+  .ps-tbl td.nm small{display:inline;margin-left:1.5mm}
+  .ps-sec h2{font-family:var(--serif);font-weight:700;font-size:12pt;color:var(--burgundy);margin:0 0 2mm;padding-bottom:1mm;border-bottom:0.3mm solid #E3D2B8}
+  .ps-sec .note{font-size:7.5pt;color:#8A7560;margin:-1mm 0 2mm}
+  .ps-tbl{width:100%;border-collapse:collapse;font-size:9pt}
+  .ps-tbl th{font-weight:600;color:#5a4636;text-align:right;padding:1.2mm 1.5mm;border-bottom:0.3mm solid #E3D2B8;font-size:8pt}
+  .ps-tbl td{padding:1mm 1.5mm;text-align:right;border-bottom:0.2mm solid #EFE3D1;white-space:nowrap}
+  .ps-tbl th:first-child,.ps-tbl td:first-child{text-align:left}
+  .ps-tbl td.nm{text-align:left;white-space:normal;font-weight:600}
+  .ps-tbl td.nm small{font-weight:400;color:#8A7560;font-size:7.5pt}
+  .ps-tbl tr.win td{background:#F7EEE0}
+  .ps-rank{display:inline-block;width:5.5mm;height:5.5mm;line-height:5.5mm;border-radius:50%;text-align:center;font-weight:700;font-size:8pt;background:#EFE3D1}
+  .ps-rank.r1{background:var(--gold);color:#fff}
+  .ps-bar{height:2mm;background:#EFE3D1;border-radius:1mm;margin-top:1mm;overflow:hidden}
+  .ps-bar i{display:block;height:100%}
+  .ps-chart{margin-bottom:5mm}
+  .ps-chart svg{width:100%;height:auto;display:block}
+  .ps-star{display:grid;grid-template-columns:1fr auto;gap:0 3mm;padding:1.3mm 0;border-bottom:0.2mm solid #EFE3D1}
+  .ps-star b{font-weight:600}
+  .ps-star small{grid-column:1/-1;color:#8A7560;font-size:7.5pt}
+  .ps-star span{font-weight:700;color:var(--burgundy)}
+  .ps-excl{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm}
+  .ps-excl div{break-inside:avoid;border:0.3mm solid #E3D2B8;border-radius:2mm;padding:2mm 3mm;font-size:8.5pt}
+  .ps-excl b{display:block;margin-bottom:1mm}
+  .ps-dot{display:inline-block;width:2.4mm;height:2.4mm;border-radius:50%;margin-right:1.2mm;vertical-align:0}
+  .ps-list{columns:3;column-gap:6mm;font-size:8.5pt}
+  .ps-list h3{break-after:avoid;font-size:9.5pt;color:var(--burgundy);margin:0 0 1mm;padding-top:2mm;font-family:var(--serif)}
+  .ps-list p{margin:0;padding:.6mm 0;break-inside:avoid;display:flex;justify-content:space-between;gap:2mm;border-bottom:0.2mm solid #F1E7D8}
+  .ps-foot{margin-top:5mm;padding-top:2mm;border-top:0.3mm solid #E3D2B8;font-size:7.5pt;color:#8A7560;display:flex;justify-content:space-between}
+  @media print{
+    @page{size:A4 portrait;margin:12mm}
+    html,body{background:#fff!important}
+    header,main,.savebar,.toast{display:none!important}
+    #print-sheet{display:block}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
   @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 </head>
@@ -189,6 +246,8 @@
       <div class="ctx">
         <div class="half"><label for="name">Your name</label><input id="name" placeholder="First and last name" autocomplete="name"></div>
         <div class="half"><label for="group">Group</label><select id="group"></select></div>
+        <div class="full" id="groupform" hidden><label for="newgroup">New group name</label>
+          <div style="display:flex;gap:8px"><input id="newgroup" placeholder="e.g. Pangolin" autocomplete="off"><button class="btn" id="groupok" type="button">Add</button><button class="btn ghost" id="groupcancel" type="button">Cancel</button></div></div>
         <div class="half"><label for="date">Date</label><input type="date" id="date"></div>
         <div class="half"><label>Activity</label>
           <div class="seg" id="activity"><button aria-pressed="true">Drive</button><button aria-pressed="false">Walk</button></div></div>
@@ -218,6 +277,7 @@
         <button aria-pressed="false" data-m="points">Points</button>
         <button aria-pressed="false" data-m="sightings">Sightings</button>
       </div>
+      <button class="btn printbtn" type="button" onclick="printResults()">Print / PDF</button>
     </div>
     <div id="res-body"><div class="loading">Loading results…</div></div>
   </section>
@@ -236,6 +296,7 @@
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div id="print-sheet"></div>
 
 <script>
 const COLORS = ['#7A2230','#5E7148','#B07A2A','#3F6B7A','#A0522D','#6B4C7A','#2F5D50','#8A6D3B'];
@@ -324,6 +385,9 @@ function applyConfig(c){
     $('course').onchange = () => { prefs.course = $('course').value; store(PKEY, prefs); fillGroups(); sel.clear(); results = null; renderLog(); loadResults(); };
     $('date').value = today();
     $('name').value = prefs.name || '';
+    $('groupok').onclick = addGroup;
+    $('groupcancel').onclick = () => { $('groupform').hidden = true; };
+    $('newgroup').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); addGroup(); } };
     $('name').onchange = () => { const n = tidyName($('name').value); $('name').value = n; prefs.name = n; store(PKEY, prefs); renderList(); renderMe(); };
     wireSeg('activity'); wireSeg('session');
     wireSeg('score', b => { scoreMode = b.dataset.m; renderResults(); });
@@ -343,11 +407,37 @@ function applyConfig(c){
 
 function syncNow(){ flush(); loadResults(); }
 
+// Groups: the Courses sheet list, plus any group added on this phone or used in unsent sightings
+function groupList(){
+  const code = $('course').value, gs = courseObj().groups.slice();
+  const add = g => { if (g && !gs.some(x => norm(x) === norm(g))) gs.push(g); };
+  ((prefs.newGroups || {})[code] || []).forEach(add);
+  queue.filter(q => q.course === code).forEach(q => add(q.group));
+  return gs;
+}
 function fillGroups(){
-  const gs = courseObj().groups;
-  $('group').innerHTML = gs.length ? gs.map(g => '<option>' + esc(g) + '</option>').join('') : '<option value="">Add groups in the Courses sheet</option>';
-  if (prefs.group && gs.includes(prefs.group)) $('group').value = prefs.group;
-  $('group').onchange = () => { prefs.group = $('group').value; store(PKEY, prefs); renderList(); };
+  const gs = groupList();
+  $('group').innerHTML = (gs.length ? '' : '<option value="">Choose your group</option>') +
+    gs.map(g => '<option>' + esc(g) + '</option>').join('') + '<option value="__new__">+ Add a new group…</option>';
+  $('group').value = prefs.group && gs.includes(prefs.group) ? prefs.group : (gs[0] || '');
+  $('group').onchange = () => {
+    if ($('group').value === '__new__'){
+      $('group').value = prefs.group && gs.includes(prefs.group) ? prefs.group : (gs[0] || '');
+      $('groupform').hidden = false; $('newgroup').value = ''; $('newgroup').focus(); return;
+    }
+    prefs.group = $('group').value; store(PKEY, prefs); renderList();
+  };
+}
+function addGroup(){
+  const code = $('course').value;
+  let g = tidyName($('newgroup').value);
+  if (!g){ $('newgroup').focus(); return; }
+  const existing = groupList().find(x => norm(x) === norm(g));
+  if (existing) g = existing;
+  else { prefs.newGroups = prefs.newGroups || {}; (prefs.newGroups[code] = prefs.newGroups[code] || []).push(g); }
+  prefs.group = g; store(PKEY, prefs);
+  $('groupform').hidden = true; fillGroups(); renderList();
+  toast(existing ? 'Switched to ' + g : 'Group ' + g + ' added. Everyone sees it once your sightings sync.');
 }
 
 // ── LOG ──
@@ -389,7 +479,7 @@ function renderList(){
       '<span class="tick">' + (on ? '✓' : '') + '</span>' +
       '<span class="nm">' + esc(s.name) + (query ? '<span class="cat">' + esc(s.category) + '</span>' : '') + '</span>' +
       (have.has(k) ? '<span class="have">On your list</span>' : '') +
-      (s.points > 1 ? '<span class="pts">' + s.points + ' pts</span>' : '') +
+      '<span class="pts' + (s.points > 1 ? '' : ' one') + '">' + s.points + (s.points === 1 ? ' pt' : ' pts') + '</span>' +
       (on ? '<span class="step"><button data-d="-1" aria-label="Fewer">−</button><span>' + on.count + '</span><button data-d="1" aria-label="More">+</button></span>' : '') +
       '</li>';
   }).join('');
@@ -614,6 +704,118 @@ function renderResults(){
   body.innerHTML = h;
   body.querySelectorAll('.del').forEach(b => b.onclick = () => removeEntry(b));
   renderMe();
+}
+
+// ── Printable report ──
+function printResults(){
+  if (!results || !cfg){ toast('Results are still loading'); return; }
+  const all = allRows();
+  const rows = period === 'all' ? all : all.filter(r => r.date === period);
+  if (!rows.length){ toast('Nothing to print yet'); return; }
+  const code = $('course').value, gs = groupsForCourse(all);
+  const ptOf = {}; rows.forEach(r => ptOf[key(r.category, r.species)] = pts(r));
+  const sumPts = m => [...m.keys].reduce((a, k) => a + (ptOf[k] || 1), 0);
+  const G = tally(rows, r => r.group); gs.forEach(g => { if (!G[g]) G[g] = blank(); });
+  const P = tally(rows, r => norm(r.observer)), pName = {}, pGroup = {};
+  rows.forEach(r => { const n = norm(r.observer); if (n){ pName[n] = pName[n] || r.observer; pGroup[n] = r.group; } });
+  const total = new Set(), catTotal = {}, seenBy = {}, trips = new Set(), info = {};
+  rows.slice().sort((a, b) => a.date.localeCompare(b.date) || a.loggedAt - b.loggedAt).forEach(r => {
+    const k = key(r.category, r.species);
+    total.add(k); (catTotal[r.category] = catTotal[r.category] || new Set()).add(k);
+    (seenBy[k] = seenBy[k] || new Set()).add(r.group);
+    trips.add(r.group + '|' + r.date + '|' + r.session + '|' + k);
+    if (!info[k]) info[k] = { name: r.species, cat: r.category, first: r.date, by: r.observer ? r.observer + ' (' + r.group + ')' : r.group, groups: new Set() };
+    info[k].groups.add(r.group);
+  });
+  const dates = [...new Set(rows.map(r => r.date))].sort();
+  const fmt = d => { const p = d.split('-'); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  const range = period === 'all' ? (dates.length > 1 ? fmt(dates[0]) + ' – ' + fmt(dates[dates.length - 1]) : fmt(dates[0])) : fmt(period);
+  const rank = (ids, M) => ids.slice().sort((a, b) => M[b].keys.size - M[a].keys.size || sumPts(M[b]) - sumPts(M[a]) || M[b].trips.size - M[a].trips.size);
+  const gRank = rank(gs, G), people = rank(Object.keys(P), P).slice(0, 10);
+  const gMax = Math.max(1, ...gs.map(g => G[g].keys.size)), pMax = Math.max(1, ...people.map(n => P[n].keys.size));
+  const col = g => colorOf(g, gs);
+  const place = (arr, i, val) => { let r = i; while (r > 0 && val(arr[r - 1]) === val(arr[i])) r--; return r + 1; };
+
+  let h = '<div class="ps-page">';
+  h += '<div class="ps-head"><img src="logo.png" alt="African Guide Academy" onerror="this.remove()"><div class="ps-title"><h1>Sightings Report</h1><p><b>' + esc(code) + '</b> · ' + range + '</p></div></div>';
+  h += '<div class="ps-kpis">' +
+    '<div class="ps-kpi"><b>' + total.size + '</b><span>species recorded</span></div>' +
+    '<div class="ps-kpi"><b>' + trips.size + '</b><span>sightings</span></div>' +
+    '<div class="ps-kpi"><b>' + dates.length + '</b><span>' + (dates.length === 1 ? 'day' : 'days') + ' in the field</span></div>' +
+    '<div class="ps-kpi"><b>' + Object.keys(P).length + '</b><span>people logging</span></div></div>';
+  h += '<div class="ps-cats">' + cfg.categories.map(c => '<div><b>' + (catTotal[c] ? catTotal[c].size : 0) + '</b><span>' + esc(c) + '</span></div>').join('') + '</div>';
+
+  // standings
+  h += '<div class="ps-cols"><div class="ps-sec"><h2>Group standings</h2><p class="note">Ranked by different species. Each animal counts once per group per drive or walk.</p><table class="ps-tbl"><thead><tr><th>#</th><th style="text-align:left">Group</th><th>Species</th><th>Points</th><th>Sightings</th></tr></thead><tbody>' +
+    gRank.map((g, i) => { const r = place(gRank, i, x => G[x].keys.size + '|' + sumPts(G[x]) + '|' + G[x].trips.size);
+      return '<tr' + (r === 1 ? ' class="win"' : '') + '><td><span class="ps-rank' + (r === 1 ? ' r1' : '') + '">' + r + '</span></td><td class="nm"><span class="ps-dot" style="background:' + col(g) + '"></span>' + esc(g) +
+        '<div class="ps-bar"><i style="width:' + (G[g].keys.size / gMax * 100) + '%;background:' + col(g) + '"></i></div></td><td><b>' + G[g].keys.size + '</b></td><td>' + sumPts(G[g]) + '</td><td>' + G[g].trips.size + '</td></tr>'; }).join('') +
+    '</tbody></table></div>';
+  h += '<div class="ps-sec"><h2>Top spotters</h2><p class="note">Individual species lists' + (Object.keys(P).length > 10 ? ', top 10' : '') + '</p><table class="ps-tbl"><thead><tr><th>#</th><th style="text-align:left">Name</th><th>Species</th><th>Points</th></tr></thead><tbody>' +
+    (people.length ? people.map((n, i) => { const r = place(people, i, x => P[x].keys.size + '|' + sumPts(P[x]) + '|' + P[x].trips.size);
+      return '<tr' + (r === 1 ? ' class="win"' : '') + '><td><span class="ps-rank' + (r === 1 ? ' r1' : '') + '">' + r + '</span></td><td class="nm">' + esc(pName[n]) + '<small><span class="ps-dot" style="background:' + col(pGroup[n]) + ';margin:0 .8mm 0 0"></span>' + esc(pGroup[n]) + '</small></td><td><b>' + P[n].keys.size + '</b></td><td>' + sumPts(P[n]) + '</td></tr>'; }).join('')
+      : '<tr><td colspan="4">No names recorded yet</td></tr>') +
+    '</tbody></table></div></div>';
+
+  // growth chart
+  if (period === 'all' && dates.length > 1){
+    const seen = new Set(), daily = [], cum = [];
+    const perGroup = {}; gs.forEach(g => perGroup[g] = { set: new Set(), pts: [] });
+    dates.forEach(d => {
+      const day = rows.filter(r => r.date === d);
+      const today = new Set(day.map(r => key(r.category, r.species)));
+      today.forEach(k => seen.add(k)); daily.push(today.size); cum.push(seen.size);
+      gs.forEach(g => { day.filter(r => r.group === g).forEach(r => perGroup[g].set.add(key(r.category, r.species))); perGroup[g].pts.push(perGroup[g].set.size); });
+    });
+    const W = 700, H = 170, L = 34, R = 30, T = 22, B = 30, pad = 18, n = dates.length, ymax = Math.max(...cum) || 1;
+    const x = i => L + pad + (n === 1 ? 0 : i * (W - L - R - pad) / (n - 1)), y = v => T + (H - T - B) * (1 - v / ymax);
+    const step = Math.max(1, Math.ceil(ymax / 5 / 5) * 5);
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="Jost, sans-serif" font-size="10">';
+    for (let v = 0; v <= ymax; v += step) svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#EFE3D1"/><text x="' + (L - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end" fill="#8A7560">' + v + '</text>';
+    const bw = Math.min(18, (W - L - R) / n * 0.5);
+    daily.forEach((v, i) => svg += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + (y(0) - y(v)) + '" fill="#EAD9BF" rx="2"/>');
+    gs.forEach(g => { if (!perGroup[g].set.size) return; svg += '<polyline fill="none" stroke="' + col(g) + '" stroke-width="1.6" stroke-dasharray="4 3" points="' + perGroup[g].pts.map((v, i) => x(i) + ',' + y(v)).join(' ') + '"/>'; });
+    svg += '<polyline fill="none" stroke="' + getComputedStyle(document.documentElement).getPropertyValue('--burgundy').trim() + '" stroke-width="3" points="' + cum.map((v, i) => x(i) + ',' + y(v)).join(' ') + '"/>';
+    const every = Math.ceil(n / 12);
+    dates.forEach((d, i) => { if (i % every === 0 || i === n - 1){ const p = d.split('-'); svg += '<text x="' + x(i) + '" y="' + (H - 12) + '" text-anchor="middle" fill="#5a4636">' + new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + '</text>'; } });
+    svg += '<text x="' + (W - R) + '" y="' + (y(cum[n - 1]) - 6) + '" text-anchor="end" font-weight="700" fill="#2B1D14">' + cum[n - 1] + ' species</text></svg>';
+    h += '<div class="ps-sec ps-chart"><h2>How the list grew</h2><p class="note">Solid line: course total. Dashed lines: each group. Bars: species seen that day.</p>' + svg + '</div>';
+  }
+
+  // champions + stars
+  const champs = cfg.categories.map(c => {
+    const vals = gs.map(g => G[g].cats[c] ? G[g].cats[c].size : 0), m = Math.max(0, ...vals);
+    return { c: c, m: m, who: m ? gs.filter((g, i) => vals[i] === m) : [] };
+  });
+  const stars = Object.keys(info).sort((a, b) => (ptOf[b] || 1) - (ptOf[a] || 1) || info[a].name.localeCompare(info[b].name)).slice(0, 12);
+  const foot = '<div class="ps-foot"><span>African Guide Academy · ' + esc(code) + '</span><span>Printed ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '</span></div>';
+  h += foot + '</div><div class="ps-page"><div class="ps-head"><img src="logo.png" alt="" onerror="this.remove()"><div class="ps-title"><h1>Highlights</h1><p><b>' + esc(code) + '</b> · ' + range + '</p></div></div>';
+  h += '<div class="ps-cols"><div class="ps-sec"><h2>Category champions</h2><table class="ps-tbl"><thead><tr><th style="text-align:left">Category</th><th style="text-align:left">Leading group</th><th>Species</th></tr></thead><tbody>' +
+    champs.map(x => '<tr><td>' + esc(x.c) + '</td><td class="nm" style="font-weight:500">' + (x.who.length ? x.who.map(g => '<span class="ps-dot" style="background:' + col(g) + '"></span>' + esc(g)).join(', ') : '<span style="color:#8A7560">None yet</span>') + '</td><td><b>' + x.m + '</b></td></tr>').join('') +
+    '</tbody></table></div>';
+  h += '<div class="ps-sec"><h2>Star sightings</h2><p class="note">Highest-scoring species, and who saw them first</p>' +
+    stars.map(k => '<div class="ps-star"><b>' + esc(info[k].name) + '</b><span>' + (ptOf[k] || 1) + ((ptOf[k] || 1) === 1 ? ' pt' : ' pts') + '</span><small>' + esc(info[k].by) + ', ' + fmt(info[k].first) + '</small></div>').join('') + '</div></div>';
+
+  // exclusives
+  const ex = {}; Object.keys(seenBy).forEach(k => { if (seenBy[k].size === 1){ const g = [...seenBy[k]][0]; (ex[g] = ex[g] || []).push(info[k].name); } });
+  if (gs.length > 1 && Object.keys(ex).length){
+    h += '<div class="ps-sec" style="break-inside:auto;margin-top:5mm"><h2>Only one group saw these</h2><div class="ps-excl">' +
+      gs.filter(g => ex[g]).map(g => '<div><b><span class="ps-dot" style="background:' + col(g) + '"></span>' + esc(g) + ' (' + ex[g].length + ')</b>' + ex[g].sort().map(esc).join(', ') + '</div>').join('') + '</div></div>';
+  }
+  h += foot + '</div>';
+
+  // species list: full list
+  h += '<div class="ps-page"><div class="ps-head"><img src="logo.png" alt="" onerror="this.remove()"><div class="ps-title"><h1>Species List</h1><p><b>' + esc(code) + '</b> · ' + total.size + ' species · ' + range + '</p></div></div><div class="ps-list">';
+  cfg.categories.concat(Object.values(info).map(i => i.cat)).filter((c, i, a) => a.indexOf(c) === i).forEach(c => {
+    const items = Object.values(info).filter(i => i.cat === c).sort((a, b) => a.name.localeCompare(b.name));
+    if (!items.length) return;
+    h += '<h3>' + esc(c) + ' (' + items.length + ')</h3>' + items.map(i => '<p><span>' + esc(i.name) + '</span><span>' + gs.filter(g => i.groups.has(g)).map(g => '<span class="ps-dot" style="background:' + col(g) + ';margin:0 0 0 .6mm"></span>').join('') + '</span></p>').join('');
+  });
+  h += '</div><p class="note" style="margin-top:4mm;font-size:7.5pt;color:#8A7560">Dots show which groups saw each species: ' + gs.map(g => '<span class="ps-dot" style="background:' + col(g) + '"></span>' + esc(g)).join(' &nbsp; ') + '</p>' + foot + '</div>';
+
+  $('print-sheet').innerHTML = h;
+  const imgs = [...$('print-sheet').querySelectorAll('img')];
+  Promise.all(imgs.map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))).then(() => setTimeout(() => window.print(), 150));
 }
 
 function renderMe(){
