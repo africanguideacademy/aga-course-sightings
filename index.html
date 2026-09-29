@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AGA Sightings</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#5C3D1E">
+<meta name="theme-color" content="#FFFFFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,6 +22,9 @@
     --serif:'Fraunces',Georgia,serif; --sans:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  .savebar:not(.on){visibility:hidden}
+  @media (max-width:480px){ .brand h1 small{display:none} .brand h1{font-size:1.2rem} .tab{padding:9px 0 10px} }
   html,body{margin:0;background:var(--parchment);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45}
   button,input,select{font:inherit;color:inherit}
   button{cursor:pointer}
@@ -29,7 +32,10 @@
   .wrap{max-width:760px;margin:0 auto;padding:0 14px}
 
   /* Header */
-  header{background:var(--earth);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 0 0}
+  header{background:var(--earth);color:#fff;padding:0}
+  .logo-band{background:#fff;padding:calc(10px + env(safe-area-inset-top)) 0 10px;border-bottom:3px solid var(--gold)}
+  .logo-band img{display:block;height:48px;width:auto;max-width:100%}
+  header .brand{padding-top:12px}
   .brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .brand h1{font-family:var(--serif);font-weight:700;font-size:1.35rem;margin:0;letter-spacing:.2px}
   .brand h1 small{display:block;font-family:var(--sans);font-weight:400;font-size:.8rem;opacity:.75}
@@ -147,23 +153,30 @@
   .loading{padding:40px 0;text-align:center;color:var(--muted)}
 
   @media (min-width:700px){ .ctx{grid-template-columns:repeat(4,1fr)} .ctx .half{grid-column:span 2} }
+  .brand .id{display:flex;align-items:center;gap:10px;min-width:0}
+  .brand .logo{height:46px;width:auto;max-width:120px;object-fit:contain;background:#fff;border-radius:8px;padding:4px}
+  .me-name{font-family:var(--serif);font-size:1.3rem;margin:18px 0 0}
+  .times{font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .more{display:block;margin:10px auto 0;background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;color:var(--earth)}
   @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
 
 <header>
+  <div class="logo-band"><div class="wrap"><img src="logo.png" alt="African Guide Academy" onerror="this.closest('.logo-band').remove()"></div></div>
   <div class="wrap">
     <div class="brand">
-      <h1>AGA Sightings<small>Game drive and walk log</small></h1>
+      <h1>Sightings<small>Game drive and walk log</small></h1>
       <div style="display:flex;gap:8px;align-items:center">
         <button id="status" class="status" onclick="syncNow()">Checking…</button>
         <div class="course-pick"><select id="course" aria-label="Course"></select></div>
       </div>
     </div>
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-log" aria-selected="true" onclick="showView('log')">Log sightings</button>
+      <button class="tab" role="tab" id="tab-log" aria-selected="true" onclick="showView('log')">Log</button>
       <button class="tab" role="tab" id="tab-res" aria-selected="false" onclick="showView('res')">Results</button>
+      <button class="tab" role="tab" id="tab-me" aria-selected="false" onclick="showView('me')">My list</button>
     </div>
   </div>
 </header>
@@ -174,6 +187,7 @@
     <div id="log-loading" class="loading">Loading species list…</div>
     <div id="log-body" hidden>
       <div class="ctx">
+        <div class="half"><label for="name">Your name</label><input id="name" placeholder="First and last name" autocomplete="name"></div>
         <div class="half"><label for="group">Group</label><select id="group"></select></div>
         <div class="half"><label for="date">Date</label><input type="date" id="date"></div>
         <div class="half"><label>Activity</label>
@@ -207,6 +221,11 @@
     </div>
     <div id="res-body"><div class="loading">Loading results…</div></div>
   </section>
+
+  <!-- MY LIST -->
+  <section class="view" id="view-me">
+    <div id="me-body"></div>
+  </section>
 </main>
 
 <div class="savebar" id="savebar">
@@ -226,7 +245,22 @@ let cfg = null, results = null, cat = 'Mammals', query = '', scoreMode = 'specie
 const sel = new Map();
 let queue = load(QKEY, []), prefs = load(PKEY, {}), sending = false, armed = null;
 
+// ── colours from config.js ──
+(function(){
+  const t = window.AGA_CONFIG && AGA_CONFIG.THEME; if (!t) return;
+  const r = document.documentElement.style;
+  if (t.header) r.setProperty('--earth', t.header);
+  if (t.accent) r.setProperty('--burgundy', t.accent);
+  if (t.highlight) r.setProperty('--gold', t.highlight);
+  if (t.background) r.setProperty('--parchment', t.background);
+  if (t.accent) COLORS[0] = t.accent;
+  if (t.highlight) COLORS[2] = t.highlight;
+})();
+
 // ── helpers ──
+function norm(n){ return String(n || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+function tidyName(n){ n = String(n || '').trim().replace(/\s+/g, ' '); return n === n.toLowerCase() ? n.replace(/(^|[\s-])\S/g, c => c.toUpperCase()) : n; }
+function myName(){ return norm($('name').value || prefs.name); }
 function load(k, d){ try{ return JSON.parse(localStorage.getItem(k)) || d; }catch(e){ return d; } }
 function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function $(id){ return document.getElementById(id); }
@@ -289,6 +323,8 @@ function applyConfig(c){
   if (first){
     $('course').onchange = () => { prefs.course = $('course').value; store(PKEY, prefs); fillGroups(); sel.clear(); results = null; renderLog(); loadResults(); };
     $('date').value = today();
+    $('name').value = prefs.name || '';
+    $('name').onchange = () => { const n = tidyName($('name').value); $('name').value = n; prefs.name = n; store(PKEY, prefs); renderList(); renderMe(); };
     wireSeg('activity'); wireSeg('session');
     wireSeg('score', b => { scoreMode = b.dataset.m; renderResults(); });
     $('period').onchange = () => { period = $('period').value; renderResults(); };
@@ -316,10 +352,11 @@ function fillGroups(){
 
 // ── LOG ──
 function showView(v){
-  $('view-log').classList.toggle('on', v === 'log'); $('view-res').classList.toggle('on', v === 'res');
-  $('tab-log').setAttribute('aria-selected', v === 'log'); $('tab-res').setAttribute('aria-selected', v === 'res');
+  ['log', 'res', 'me'].forEach(x => { $('view-' + x).classList.toggle('on', v === x); $('tab-' + x).setAttribute('aria-selected', v === x); });
   updateBar();
   if (v === 'res') renderResults();
+  if (v === 'me') renderMe();
+  window.scrollTo(0, 0);
 }
 
 function renderLog(){ renderCats(); renderList(); updateBar(); }
@@ -333,8 +370,8 @@ function renderCats(){
 }
 
 function groupHas(){
-  const g = $('group').value, set = new Set();
-  allRows().forEach(r => { if (r.group === g) set.add(key(r.category, r.species)); });
+  const me = myName(), g = $('group').value, set = new Set();
+  allRows().forEach(r => { if (me ? norm(r.observer) === me : r.group === g) set.add(key(r.category, r.species)); });
   return set;
 }
 
@@ -389,13 +426,16 @@ function clearSel(){ sel.clear(); renderLog(); }
 
 function saveSel(){
   const course = $('course').value, group = $('group').value;
+  const observer = tidyName($('name').value);
+  if (!observer){ toast('Type your name first'); $('name').focus(); window.scrollTo(0, 0); return; }
   if (!group){ toast('Choose your group first'); return; }
-  const base = { date: $('date').value || today(), course, group, activity: segVal('activity'), session: segVal('session'), notes: $('notes').value.trim() };
+  prefs.name = observer; store(PKEY, prefs);
+  const base = { date: $('date').value || today(), course, group, observer, activity: segVal('activity'), session: segVal('session'), notes: $('notes').value.trim() };
   sel.forEach(v => queue.push(Object.assign({ id: uid(), category: v.category, species: v.species, count: v.count }, base)));
   store(QKEY, queue);
   const n = sel.size; sel.clear(); $('notes').value = '';
   renderLog(); updateStatus(); renderResults();
-  toast(n + (n === 1 ? ' sighting' : ' sightings') + ' saved for ' + group);
+  toast(n + (n === 1 ? ' sighting' : ' sightings') + ' saved for ' + observer);
   flush();
 }
 
@@ -450,6 +490,37 @@ function fillPeriods(){
   $('period').value = period;
 }
 
+function tally(rows, idOf){
+  const M = {};
+  rows.forEach(r => {
+    const id = idOf(r); if (!id) return;
+    const k = key(r.category, r.species), m = M[id] || (M[id] = { keys: new Set(), trips: new Set(), cats: {} });
+    m.keys.add(k);
+    m.trips.add(r.date + '|' + r.session + '|' + k);            // one animal, one drive = one sighting
+    (m.cats[r.category] = m.cats[r.category] || new Set()).add(k);
+  });
+  return M;
+}
+function blank(){ return { keys: new Set(), trips: new Set(), cats: {} }; }
+
+function boardHTML(ids, M, ptOf, nameOf, subOf, colorOfId, limit){
+  const pts = m => [...m.keys].reduce((a, k) => a + (ptOf[k] || 1), 0);
+  const score = id => scoreMode === 'species' ? M[id].keys.size : scoreMode === 'sightings' ? M[id].trips.size : pts(M[id]);
+  const ranked = ids.slice().sort((a, b) => score(b) - score(a) || String(nameOf(a)).localeCompare(nameOf(b)));
+  const max = Math.max(1, ...ranked.map(score)), top = ranked.length ? score(ranked[0]) : 0;
+  let rank = 0, prev = null, h = '<ol class="board">';
+  ranked.forEach((id, i) => {
+    const s = score(id); if (s !== prev){ rank = i + 1; prev = s; }
+    const m = M[id], p = pts(m);
+    h += '<li class="row"' + (limit && i >= limit ? ' hidden data-extra' : '') + '><span class="rk">' + rank + '</span><div><div class="gn">' + esc(nameOf(id)) + (s === top && s > 0 ? '<em>Leading</em>' : '') + '</div>' +
+      '<div class="meta">' + (subOf ? esc(subOf(id)) + ', ' : '') + m.keys.size + ' species, ' + p + (p === 1 ? ' point, ' : ' points, ') + m.trips.size + (m.trips.size === 1 ? ' sighting' : ' sightings') + '</div></div>' +
+      '<span class="sc">' + s + '</span><div class="track"><i style="width:' + (s / max * 100) + '%;background:' + colorOfId(id) + '"></i></div></li>';
+  });
+  h += '</ol>';
+  if (limit && ranked.length > limit) h += '<button class="more" onclick="this.previousElementSibling.querySelectorAll(\'[data-extra]\').forEach(x => x.hidden = false); this.remove()">Show all ' + ranked.length + '</button>';
+  return h;
+}
+
 function renderResults(){
   if (!results) return;
   fillPeriods();
@@ -457,44 +528,35 @@ function renderResults(){
   const rows = period === 'all' ? all : all.filter(r => r.date === period);
   const gs = groupsForCourse(all);
   const body = $('res-body');
-  if (!rows.length){ body.innerHTML = '<div class="empty" style="margin-top:18px">No sightings logged ' + (period === 'all' ? 'for this course yet' : 'on this day') + '. Open Log sightings to add the first ones.</div>'; return; }
-
-  // per group
-  const G = {}; gs.forEach(g => G[g] = { keys: new Set(), sightings: 0, cats: {} });
-  const seenBy = {}, total = new Set(), catTotal = {};
-  rows.forEach(r => {
-    const k = key(r.category, r.species), g = G[r.group] || (G[r.group] = { keys: new Set(), sightings: 0, cats: {} });
-    g.keys.add(k); g.sightings++;
-    (g.cats[r.category] = g.cats[r.category] || new Set()).add(k);
-    (seenBy[k] = seenBy[k] || new Set()).add(r.group);
-    total.add(k); (catTotal[r.category] = catTotal[r.category] || new Set()).add(k);
-  });
-  const ptOf = {}; rows.forEach(r => ptOf[key(r.category, r.species)] = pts(r));
-  const score = g => scoreMode === 'species' ? G[g].keys.size : scoreMode === 'sightings' ? G[g].sightings : [...G[g].keys].reduce((a, k) => a + ptOf[k], 0);
-  const ranked = gs.slice().sort((a, b) => score(b) - score(a));
-  const max = Math.max(1, ...ranked.map(score));
-  const top = score(ranked[0]);
-  const periodLabel = period === 'all' ? 'on ' + esc($('course').value) : (period === today() ? 'today' : 'on ' + niceDate(period));
-
   const asOf = results.fetchedAt ? new Date(results.fetchedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null;
-  let h = '<p class="sub" style="margin:14px 0 0">' + (asOf ? 'Other groups\' sightings as of ' + asOf + '. Yours update instantly.' : 'Connect to camp Wi-Fi to see other groups\' sightings.') + '</p>';
-  h += '<div class="hero"><div class="big">' + total.size + '</div><p>species recorded ' + periodLabel + ' across ' + rows.length + ' sightings</p>' +
+  let h = '<p class="sub" style="margin:14px 0 0">' + (asOf ? 'Everyone\'s sightings as of ' + asOf + '. Yours update instantly.' : 'Connect to camp Wi-Fi to see everyone else\'s sightings.') + '</p>';
+  if (!rows.length){ body.innerHTML = h + '<div class="empty" style="margin-top:18px">No sightings logged ' + (period === 'all' ? 'for this course yet' : 'on this day') + '. Open Log sightings to add the first ones.</div>'; renderMe(); return; }
+
+  const ptOf = {}; rows.forEach(r => ptOf[key(r.category, r.species)] = pts(r));
+  const G = tally(rows, r => r.group); gs.forEach(g => { if (!G[g]) G[g] = blank(); });
+  const P = tally(rows, r => norm(r.observer));
+  const pName = {}, pGroup = {};
+  rows.forEach(r => { const n = norm(r.observer); if (n){ pName[n] = pName[n] || r.observer; pGroup[n] = r.group; } });
+  const total = new Set(), catTotal = {}, seenBy = {};
+  rows.forEach(r => { const k = key(r.category, r.species); total.add(k); (catTotal[r.category] = catTotal[r.category] || new Set()).add(k); (seenBy[k] = seenBy[k] || new Set()).add(r.group); });
+  const periodLabel = period === 'all' ? 'on ' + esc($('course').value) : (period === today() ? 'today' : 'on ' + niceDate(period));
+  const people = Object.keys(P);
+
+  h += '<div class="hero"><div class="big">' + total.size + '</div><p>species recorded ' + periodLabel + ' by ' + people.length + (people.length === 1 ? ' person' : ' people') + ' in ' + gs.length + (gs.length === 1 ? ' group' : ' groups') + '</p>' +
     '<div class="tally">' + cfg.categories.map(c => '<div><b>' + (catTotal[c] ? catTotal[c].size : 0) + '</b><span>' + esc(c) + '</span></div>').join('') + '</div></div>';
 
-  // leaderboard
-  const modeTxt = { species: 'Ranked by number of different species seen', points: 'Ranked by points. Rarer animals score more (set in the Species sheet)', sightings: 'Ranked by number of sightings logged' }[scoreMode];
-  h += '<h2>Leaderboard</h2><p class="sub">' + modeTxt + '</p><ol class="board">';
-  let rank = 0, prev = null;
-  ranked.forEach((g, i) => {
-    const s = score(g); if (s !== prev){ rank = i + 1; prev = s; }
-    const P = [...G[g].keys].reduce((a, k) => a + ptOf[k], 0);
-    h += '<li class="row"><span class="rk">' + rank + '</span><div><div class="gn">' + esc(g) + (s === top && s > 0 ? '<em>Leading</em>' : '') + '</div>' +
-      '<div class="meta">' + G[g].keys.size + ' species, ' + P + (P === 1 ? ' point, ' : ' points, ') + G[g].sightings + (G[g].sightings === 1 ? ' sighting' : ' sightings') + '</div></div>' +
-      '<span class="sc">' + s + '</span><div class="track"><i style="width:' + (s / max * 100) + '%;background:' + colorOf(g, gs) + '"></i></div></li>';
-  });
-  h += '</ol>';
+  const modeTxt = {
+    species: 'Ranked by number of different species seen',
+    points: 'Ranked by points. Rarer animals score more (set in the Species sheet)',
+    sightings: 'Ranked by sightings. An animal counts once per drive or walk, however many people logged it'
+  }[scoreMode];
+  h += '<h2>Group leaderboard</h2><p class="sub">' + modeTxt + '</p>' +
+    boardHTML(gs, G, ptOf, g => g, null, g => colorOf(g, gs));
+  if (people.length){
+    h += '<h2>Individual leaderboard</h2><p class="sub">' + modeTxt + '</p>' +
+      boardHTML(people, P, ptOf, n => pName[n], n => pGroup[n], n => colorOf(pGroup[n], gs), 10);
+  }
 
-  // category table
   h += '<h2>By category</h2><p class="sub">Different species per group. The category leader is highlighted.</p><div class="tbl-wrap"><table><thead><tr><th>Category</th>' +
     gs.map(g => '<th><span class="dot" style="background:' + colorOf(g, gs) + '"></span>' + esc(g) + '</th>').join('') + '</tr></thead><tbody>';
   cfg.categories.forEach(c => {
@@ -503,7 +565,6 @@ function renderResults(){
   });
   h += '</tbody></table></div>';
 
-  // exclusives
   const ex = {}; Object.keys(seenBy).forEach(k => { if (seenBy[k].size === 1){ const g = [...seenBy[k]][0]; (ex[g] = ex[g] || []).push(k); } });
   if (gs.length > 1 && Object.keys(ex).length){
     const nameOf = {}; rows.forEach(r => nameOf[key(r.category, r.species)] = r.species);
@@ -512,31 +573,28 @@ function renderResults(){
         ex[g].map(k => nameOf[k]).sort().map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>').join('') + '</div>';
   }
 
-  // day by day (whole course only)
   if (period === 'all'){
     const byDay = {}, first = {};
     all.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(r => {
       const k = key(r.category, r.species);
-      (byDay[r.date] = byDay[r.date] || { sp: new Set(), fresh: new Set(), n: 0 });
-      byDay[r.date].sp.add(k); byDay[r.date].n++;
+      (byDay[r.date] = byDay[r.date] || { sp: new Set(), fresh: new Set() });
+      byDay[r.date].sp.add(k);
       if (!first[k]){ first[k] = r.date; byDay[r.date].fresh.add(k); }
     });
-    const days = Object.keys(byDay).sort();
     let run = 0;
     h += '<h2>Day by day</h2><p class="sub">How the course list grew</p><div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Species seen</th><th>New to the list</th><th>Course total</th></tr></thead><tbody>' +
-      days.map(d => { run += byDay[d].fresh.size; return '<tr><td>' + niceDate(d) + '</td><td>' + byDay[d].sp.size + '</td><td>' + byDay[d].fresh.size + '</td><td>' + run + '</td></tr>'; }).join('') +
+      Object.keys(byDay).sort().map(d => { run += byDay[d].fresh.size; return '<tr><td>' + niceDate(d) + '</td><td>' + byDay[d].sp.size + '</td><td>' + byDay[d].fresh.size + '</td><td>' + run + '</td></tr>'; }).join('') +
       '</tbody></table></div>';
   }
 
-  // checklist
   const info = {};
   rows.slice().sort((a, b) => a.date.localeCompare(b.date) || a.loggedAt - b.loggedAt).forEach(r => {
     const k = key(r.category, r.species);
-    if (!info[k]) info[k] = { name: r.species, cat: r.category, first: r.date, by: r.group, groups: new Set() };
+    if (!info[k]) info[k] = { name: r.species, cat: r.category, first: r.date, by: r.observer ? r.observer + ', ' + r.group : r.group, groups: new Set() };
     info[k].groups.add(r.group);
   });
-  h += '<h2>Species list</h2><p class="sub">Everything seen, with the group that saw it first</p><div class="check">';
-  cfg.categories.concat(Object.values(info).map(i => i.cat).filter(c => !cfg.categories.includes(c))).filter((c, i, a) => a.indexOf(c) === i).forEach(c => {
+  h += '<h2>Species list</h2><p class="sub">Everything seen, and who saw it first</p><div class="check">';
+  cfg.categories.concat(Object.values(info).map(i => i.cat)).filter((c, i, a) => a.indexOf(c) === i).forEach(c => {
     const items = Object.values(info).filter(i => i.cat === c).sort((a, b) => a.name.localeCompare(b.name));
     if (!items.length) return;
     h += '<h3>' + esc(c) + ' (' + items.length + ')</h3><ul>' + items.map(i =>
@@ -545,15 +603,43 @@ function renderResults(){
   });
   h += '</div>';
 
-  // recent
+  const me = myName();
   const rec = rows.slice().sort((a, b) => b.loggedAt - a.loggedAt).slice(0, 20);
-  h += '<h2>Latest entries</h2><p class="sub">Logged something by mistake? Tap Remove twice.</p><ul class="recent">' + rec.map(r =>
+  h += '<h2>Latest entries</h2><p class="sub">You can remove your own entries (tap Remove twice). Instructors can edit anything in the Google Sheet.</p><ul class="recent">' + rec.map(r =>
     '<li><span class="dot" style="background:' + colorOf(r.group, gs) + '"></span><span class="nm">' + esc(r.species) + (r.count > 1 ? ' ×' + r.count : '') +
-    '<small>' + esc(r.group) + ', ' + niceDate(r.date) + ', ' + esc(r.activity) + ' ' + esc(r.session).toLowerCase() + (r.notes ? ', ' + esc(r.notes) : '') + '</small></span>' +
-    (r.pending ? '<span class="wait">Waiting</span>' : '') + '<button class="del" data-id="' + esc(r.id) + '">Remove</button></li>').join('') + '</ul>';
+    '<small>' + esc(r.observer || '') + (r.observer ? ', ' : '') + esc(r.group) + ', ' + niceDate(r.date) + ', ' + esc(r.activity) + ' ' + esc(r.session).toLowerCase() + (r.notes ? ', ' + esc(r.notes) : '') + '</small></span>' +
+    (r.pending ? '<span class="wait">Waiting</span>' : '') +
+    (r.pending || (me && norm(r.observer) === me) ? '<button class="del" data-id="' + esc(r.id) + '">Remove</button>' : '') + '</li>').join('') + '</ul>';
 
   body.innerHTML = h;
   body.querySelectorAll('.del').forEach(b => b.onclick = () => removeEntry(b));
+  renderMe();
+}
+
+function renderMe(){
+  const el = $('me-body'); if (!el || !cfg) return;
+  const me = myName();
+  if (!me){ el.innerHTML = '<div class="empty" style="margin-top:18px">Type your name on the Log sightings tab, and your personal species list will build up here.</div>'; return; }
+  const rows = allRows().filter(r => norm(r.observer) === me);
+  const shown = tidyName($('name').value || prefs.name);
+  if (!rows.length){ el.innerHTML = '<p class="me-name">' + esc(shown) + '</p><div class="empty" style="margin-top:12px">No sightings logged under this name on ' + esc($('course').value) + ' yet.</div>'; return; }
+  const info = {}, catTotal = {};
+  rows.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(r => {
+    const k = key(r.category, r.species);
+    const i = info[k] || (info[k] = { name: r.species, cat: r.category, first: r.date, trips: new Set() });
+    i.trips.add(r.date + '|' + r.session);
+    (catTotal[r.category] = catTotal[r.category] || new Set()).add(k);
+  });
+  const P = Object.keys(info).reduce((a, k) => a + pts({ category: info[k].cat, species: info[k].name }), 0);
+  let h = '<p class="me-name">' + esc(shown) + '</p><div class="hero" style="margin-top:6px"><div class="big">' + Object.keys(info).length + '</div><p>species on your list for ' + esc($('course').value) + ', worth ' + P + (P === 1 ? ' point' : ' points') + '</p>' +
+    '<div class="tally">' + cfg.categories.map(c => '<div><b>' + (catTotal[c] ? catTotal[c].size : 0) + '</b><span>' + esc(c) + '</span></div>').join('') + '</div></div><div class="check">';
+  cfg.categories.concat(Object.values(info).map(i => i.cat)).filter((c, i, a) => a.indexOf(c) === i).forEach(c => {
+    const items = Object.values(info).filter(i => i.cat === c).sort((a, b) => a.name.localeCompare(b.name));
+    if (!items.length) return;
+    h += '<h3>' + esc(c) + ' (' + items.length + ')</h3><ul>' + items.map(i =>
+      '<li><span class="nm">' + esc(i.name) + '<br><span class="fs">First seen ' + niceDate(i.first) + '</span></span><span class="times">' + i.trips.size + (i.trips.size === 1 ? ' drive/walk' : ' drives/walks') + '</span></li>').join('') + '</ul>';
+  });
+  el.innerHTML = h + '</div>';
 }
 
 function removeEntry(b){

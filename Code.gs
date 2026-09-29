@@ -22,7 +22,7 @@ const SH_SIGHTINGS = 'Sightings';
 const SH_SPECIES   = 'Species';
 const SH_COURSES   = 'Courses';
 
-const SIGHT_HEADERS   = ['Sighting ID', 'Logged At', 'Date', 'Course Code', 'Group', 'Activity', 'Session', 'Category', 'Species', 'Count', 'Notes'];
+const SIGHT_HEADERS   = ['Sighting ID', 'Logged At', 'Date', 'Course Code', 'Group', 'Activity', 'Session', 'Category', 'Species', 'Count', 'Notes', 'Observer'];
 const SPECIES_HEADERS = ['Category', 'Species', 'Points'];
 const COURSE_HEADERS  = ['Course Code', 'Start Date', 'End Date', 'Groups (comma separated)', 'Active (Y/N)'];
 
@@ -121,7 +121,7 @@ function getConfig() {
 }
 
 // ── SAVE A BATCH OF SIGHTINGS ─────────────────────────────────────
-// Each item: {id, date:'yyyy-mm-dd', course, group, activity, session, category, species, count, notes}
+// Each item: {id, date:'yyyy-mm-dd', course, group, activity, session, category, species, count, notes, observer}
 function saveSightings(items) {
   if (!items || !items.length) return { saved: 0, ids: [] };
   const lock = LockService.getScriptLock();
@@ -129,6 +129,10 @@ function saveSightings(items) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sh = ss.getSheetByName(SH_SIGHTINGS);
+    if (sh.getRange(1, SIGHT_HEADERS.length).getValue() !== 'Observer') {
+      sh.getRange(1, 1, 1, SIGHT_HEADERS.length).setValues([SIGHT_HEADERS])
+        .setFontWeight('bold').setBackground('#5C3D1E').setFontColor('#FFFFFF');
+    }
 
     // Skip anything already saved (protects against double-sends from weak signal)
     const last = sh.getLastRow();
@@ -140,7 +144,8 @@ function saveSightings(items) {
       const rows = fresh.map(it => [
         String(it.id), now, parseDate_(it.date), String(it.course || ''), String(it.group || ''),
         String(it.activity || ''), String(it.session || ''), String(it.category || ''),
-        String(it.species || '').trim(), Number(it.count) || 1, String(it.notes || '')
+        String(it.species || '').trim(), Number(it.count) || 1, String(it.notes || ''),
+        String(it.observer || '').trim()
       ]);
       sh.getRange(sh.getLastRow() + 1, 1, rows.length, SIGHT_HEADERS.length).setValues(rows);
       addNewSpecies_(ss, fresh);
@@ -188,7 +193,8 @@ function getResults(course) {
       category: String(r[7]).trim(),
       species: String(r[8]).trim(),
       count: Number(r[9]) || 1,
-      notes: String(r[10] || '')
+      notes: String(r[10] || ''),
+      observer: String(r[11] || '').trim()
     }));
 
   const points = {};

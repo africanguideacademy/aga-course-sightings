@@ -1,6 +1,6 @@
 // AGA Sightings offline worker.
 // When you change any app file, raise the version number below so phones pick it up.
-const CACHE = 'aga-sightings-v1';
+const CACHE = 'aga-sightings-v2';
 const SHELL = ['./', './index.html', './config.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
